@@ -1,0 +1,97 @@
+classDiagram
+    class Card {
+        +String rank
+        +String suit
+        +Boolean facedown
+        +__init__(rank: String, suit: String)
+        +__str__(): String
+        +get_value(): Int
+        +__lt__(other: Card): Boolean
+        +__gt__(other: Card): Boolean
+        +__eq__(other: Card): Boolean
+        +compare(other_card: Card): Int
+        +get_image(size: Tuple): ImageTk.PhotoImage
+        +get_back_image(size: Tuple): ImageTk.PhotoImage
+    }
+
+    class Deck {
+        -List~Card~ cards
+        +__init__()
+        +shuffle()
+        +deal(num_players: Int): List~List~Card~~
+        +__len__(): Int
+    }
+
+    class Table {
+        -Dict~Player, Card~ played_cards
+        +__init__()
+        +place_card(player: Player, card: Card)
+        +clear()
+        +get_round_winner(): Player
+        +collect_cards(): List~Card~
+        +display_played_cards()
+    }
+
+    class Player {
+        +String name
+        -List~Card~ hand
+        +__init__(name: String)
+        +play_card(): Card
+        +receive_cards(cards: List~Card~)
+        +get_hand_size(): Int
+        +has_cards(): Boolean
+        +display_card()
+    }
+
+    class Game {
+        -Deck deck
+        -List~Player~ players
+        -Table table
+        -Rules rules
+        +__init__(player1_name: String, player2_name: String, rules: Rules)
+        +shuffle()
+        +deal()
+        +play_round(): Player
+        -resolve_war(): Player
+        +get_winner(): Player
+        +is_game_over(): Boolean
+    }
+
+    class GUI {
+        -Game game
+        -Tk root
+        -Canvas canvas
+        -Dict~String, PhotoImage~ card_images
+        -Frame player1_frame
+        -Frame player2_frame
+        -Label player1_label
+        -Label player2_label
+        -Label player1_card_label
+        -Label player2_card_label
+        -Button shuffle_button
+        -Button deal_button
+        -Button play_button
+        -StringVar war_resolution
+        +__init__(game: Game)
+        -create_widgets()
+        -update_display()
+        +run()
+    }
+
+    class Rules {
+        +String war_resolution_method
+        +Boolean use_double_deck
+        +Boolean speed_war_enabled
+        +__init__(war_resolution_method: String, use_double_deck: Boolean, speed_war_enabled: Boolean)
+        +resolve_war(player1: Player, player2: Player): Player
+        +is_speed_war(card1: Card, card2: Card): Boolean
+    }
+
+    Deck "1" --* "52..104" Card : contains
+    Player "1" --* "0..*" Card : has
+    Game "1" --* "1" Deck : uses
+    Game "1" --* "2" Player : has
+    Game "1" --* "1" Table : uses
+    Game "1" --* "1" Rules : uses
+    GUI "1" --* "1" Game : displays
+    Table "1" --o "0..*" Card : temporarily holds
