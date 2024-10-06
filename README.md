@@ -2,6 +2,13 @@
 
 A Python implementation of the classic card game "War" with a graphical user interface.
 
+![War](./static/gif.gif "GIF")
+![Deal](./static/deal.png "Deal")
+![Play](./static/play.png "Play")
+![Start](./static/start.png "Start")
+![War](./static/war.png "War")
+![UML](./static/uml.png "UML")
+
 ## Requirements
 
 - Python 3.8+
@@ -11,12 +18,14 @@ A Python implementation of the classic card game "War" with a graphical user int
 ## Setup
 
 1. Clone the repository:
+
    ```
    git clone https://github.com/yourusername/warzone-battle-of-cards.git
    cd warzone-battle-of-cards
    ```
 
 2. Create a virtual environment (optional but recommended):
+
    ```
    python -m venv venv
    source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
