@@ -18,6 +18,7 @@ class Table:
         Initialize a new game table.
         """
         self.played_cards: Dict[str, Card] = {}
+        self.last_played_cards: Dict[str, Card] = {} 
 
     def place_card(self, player: Player, card: Card) -> None:
         """
@@ -33,44 +34,40 @@ class Table:
         """
         Clear all cards from the table.
         """
-        self.played_cards.clear()
+        self.last_played_cards = self.played_cards.copy()  # Store the last played cards
+        self.played_cards.clear()  # Clear for the next round
 
     def get_round_winner(self) -> Optional[str]:
-        """
-        Determine the winner of the current round.
-
-        Returns:
-            Optional[str]: The name of the winning player, or None if it's a tie.
-        """
-        if not self.played_cards:
+        cards_to_check = self.played_cards if self.played_cards else self.last_played_cards
+        if not cards_to_check:
             return None
-
-        max_card = max(self.played_cards.values())
-        winners = [player for player, card in self.played_cards.items() if card == max_card]
-
+        max_card = max(cards_to_check.values(), key=lambda card: card.get_value())
+        winners = [player for player, card in cards_to_check.items() if card.get_value() == max_card.get_value()]
         return winners[0] if len(winners) == 1 else None
-
+    
     def collect_cards(self) -> List[Card]:
-        """
-        Collect all cards from the table.
-
-        Returns:
-            List[Card]: A list of all cards that were on the table.
-        """
-        cards = list(self.played_cards.values())
+        cards = list(self.played_cards.values()) + list(self.last_played_cards.values())
         self.clear()
         return cards
 
-    def display_played_cards(self) -> None:
+    def display_played_cards(self) -> Dict[str, str]:
         """
-        Display the cards currently on the table.
+        Prepare the played cards for display.
 
-        This method is a placeholder for potential GUI integration.
-        In a graphical implementation, this method would update the
-        display to show all cards currently on the table.
+        Returns:
+            Dict[str, str]: A dictionary mapping player names to string representations of their played cards.
         """
-        # This method would be implemented in a GUI version of the game
-        pass
+        return {player: str(card) for player, card in self.played_cards.items()}
+    
+    def __str__(self) -> str:
+        """
+        Get a string representation of the table.
+
+        Returns:
+            str: A string describing the cards currently on the table and the last round's winner.
+        """
+        current_round = " | ".join(f"{player}: {card}" for player, card in self.played_cards.items())
+        return f"Current round: {current_round}"
 
     def __str__(self) -> str:
         """

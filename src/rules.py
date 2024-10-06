@@ -15,7 +15,7 @@ class Rules:
         speed_war_enabled (bool): Whether the speed war rule is enabled.
     """
 
-    def __init__(self, war_resolution_method: str = 'standard', use_double_deck: bool = False, speed_war_enabled: bool = False):
+    def __init__(self, war_resolution_method: str = '1', use_double_deck: bool = False, speed_war_enabled: bool = False):
         """
         Initialize a new rule set for the game.
 
@@ -28,6 +28,14 @@ class Rules:
         self.use_double_deck = use_double_deck
         self.speed_war_enabled = speed_war_enabled
 
+    def get_war_cards_to_play(self):
+        if self.war_resolution_method in ['1', '2', '3']:
+            return int(self.war_resolution_method)
+        elif self.war_resolution_method == 'speed':
+            return 1
+        else:
+            return 1
+        
     def resolve_war(self, player1: Player, player2: Player) -> Optional[Player]:
         """
         Resolve a war between two players.
@@ -84,9 +92,9 @@ class Rules:
         Returns:
             bool: True if it's a speed war, False otherwise.
         """
-        if not self.speed_war_enabled:
+        if self.war_resolution_method != 'speed':
             return False
-
+        
         rank_diff = abs(Card.RANKS.index(card1.rank) - Card.RANKS.index(card2.rank))
         return rank_diff == 1 or rank_diff == 12  # 12 for Ace-King adjacency
 

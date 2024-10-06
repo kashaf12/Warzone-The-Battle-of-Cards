@@ -34,6 +34,9 @@ class Game:
             self.deck.cards.extend(Deck().cards)  # Add a second deck
         self.players = [Player(player1_name), Player(player2_name)]
         self.table = Table()
+        self.war_in_progress = False
+        self.war_cards = []
+        self.speed_war_cards = []
 
     def shuffle(self) -> None:
         """
@@ -65,47 +68,67 @@ class Game:
                 card = player.play_card()
                 self.table.place_card(player, card)
 
-        winner_name = self.table.get_round_winner()
-        if winner_name:
-            winner = next(player for player in self.players if player.name == winner_name)
-            winner.receive_cards(self.table.collect_cards())
+        winner = self.table.get_round_winner()
+        if winner:
+            winning_player = next(player for player in self.players if player.name == winner)
+            winning_player.receive_cards(self.table.collect_cards())
+            self.war_in_progress = False
         else:
-            self._resolve_war()
+            self.war_in_progress = True
 
         return self.get_winner()
+    
+    def is_war_in_progress(self) -> bool:
+        return self.war_in_progress
 
-    def _resolve_war(self) -> None:
+    def resolve_war(self) -> None:
         """
         Resolve a war situation.
         """
-        war_players = self.players.copy()
-        war_cards: List[Card] = []
-
-        while len(set(card.get_value() for card in self.table.played_cards.values())) == 1:
-            # Check if any player ran out of cards
-            war_players = [p for p in war_players if p.has_cards()]
-            if len(war_players) == 1:
-                war_players[0].receive_cards(self.table.collect_cards() + war_cards)
+        war_players = [p for p in self.players if p.has_cards()]
+        war_cards = []
+        
+        while True:
+            cards_to_play = self.rules.get_war_cards_to_play()
+            
+            # Check if all players have enough cards for the war
+            if not all(player.get_hand_size() >= cards_to_play + 1 for player in war_players):
+                # If a player doesn't have enough cards, they lose the war
+                winner = max(war_players, key=lambda p: p.get_hand_size())
+                winner.receive_cards(self.table.collect_cards() + war_cards)
+                self.war_in_progress = False
                 return
 
             # Each player puts down face-down cards
             for player in war_players:
-                if player.has_cards():
+                for _ in range(cards_to_play):
                     war_cards.append(player.play_card())
 
             # Each player puts down a face-up card
             self.table.clear()
             for player in war_players:
-                if player.has_cards():
-                    card = player.play_card()
-                    self.table.place_card(player, card)
-                    war_cards.append(card)
+                card = player.play_card()
+                self.table.place_card(player, card)
+                war_cards.append(card)
 
-        # Determine war winner
-        winner_name = self.table.get_round_winner()
-        if winner_name:
-            winner = next(player for player in self.players if player.name == winner_name)
-            winner.receive_cards(self.table.collect_cards() + war_cards)
+            # Check for a winner
+            winner_name = self.table.get_round_winner()
+            if winner_name:
+                winner = next(player for player in self.players if player.name == winner_name)
+                winner.receive_cards(self.table.collect_cards() + war_cards)
+                self.war_in_progress = False
+                return
+            
+            # If there's no winner, continue the war with the remaining players
+            war_players = [p for p in war_players if p.has_cards()]
+            if len(war_players) == 1:
+                war_players[0].receive_cards(self.table.collect_cards() + war_cards)
+                self.war_in_progress = False
+                return
+
+        # This line should never be reached, but just in case:
+        self.war_in_progress = False
+        self.table.clear()
 
     def get_winner(self) -> Optional[Player]:
         """
