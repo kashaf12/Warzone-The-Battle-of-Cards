@@ -7,7 +7,7 @@ setup(
     name="warzone-battle-of-cards",
     version="1.0.0",
     author="Kashaf Ahmed",
-    author_email="kashaf.ahmed@example.com",
+    author_email="kashaf.ahmed@gmail.com",
     description="A Python implementation of the card game Warzone: The Battle of Cards",
     long_description=long_description,
     long_description_content_type="text/markdown",
